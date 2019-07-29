@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "letter_opener"
-  s.version     = "1.4.1"
+  s.version     = "1.7.0"
   s.author      = "Ryan Bates"
   s.email       = "ryan@railscasts.com"
   s.homepage    = "http://github.com/ryanb/letter_opener"
@@ -15,6 +15,15 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 3.5.0'
   s.add_development_dependency 'mail', '~> 2.6.0'
 
-  s.rubyforge_project = s.name
   s.required_rubygems_version = ">= 1.3.4"
+  
+  if s.respond_to?(:metadata)
+    s.metadata = {
+      'bug_tracker_uri' => 'https://github.com/ryanb/letter_opener/issues',
+      'changelog_uri' => 'https://github.com/ryanb/letter_opener/blob/master/CHANGELOG.md',
+      'documentation_uri' => 'http://www.rubydoc.info/gems/letter_opener/',
+      'homepage_uri' => 'http://github.com/ryanb/letter_opener',
+      'source_code_uri' => 'https://github.com/ryanb/letter_opener/',
+    }
+  end
 end

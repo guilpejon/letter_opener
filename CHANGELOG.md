@@ -1,10 +1,24 @@
 ## master ##
+
+## 1.7.0 ##
+ * Use default configuration in `Message::rendered_messages` (thanks [Krystan HuffMenne
+](https://github.com/gitKrystan))
+ * Do not use `Rails.root` path if LetterOpener is used outside of Rails (thanks [centrevillage](https://github.com/centrevillage))
+ * Allow to set only `Mail#cc`/`Mail#bcc` without `Mail#to`.
+
+## 1.6.0 ##
+ * Do not depend on Mail gem to check delivery params.
+ * Do not parse and escape url before passing it to Launchy.
+
+## 1.5.0 ##
  * Use proper check for `Rails::Railties` (thanks [Florian Weingarten](https://github.com/fw42))
  * Add a shim for the iFrame "srcdoc" attribute (make it work with IE).
  * Do not convert `-` to `_` in attachment file names. (thanks [Steven Harman](https://github.com/stevenharman))
  * Drop Ruby 1.9 support.
  * Escape inline attachment names the same way they are stored in the attachments directory (thanks [Daniel Rikowski](https://github.com/daniel-rikowski))
  * Increase timestamp precision in the mail filename. (thanks [Piotr Usewicz](https://github.com/pusewicz))
+ * Add ability to configure location of stored mails. (thanks [Ben](https://github.com/beejamin))
+ * Add light version of template for mails that doesn't render any additional styling. (thanks [Ben](https://github.com/beejamin))
 
 ## 1.4.1 ##
  * Stop base tag appearing in plain-text previews. (thanks [Coby Chapple](https://github.com/cobyism))

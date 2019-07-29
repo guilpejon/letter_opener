@@ -7,20 +7,26 @@ module LetterOpener
   class Message
     attr_reader :mail
 
-    def self.rendered_messages(location, mail)
+    def self.rendered_messages(mail, options = {})
       messages = []
-      messages << new(location, mail, mail.html_part) if mail.html_part
-      messages << new(location, mail, mail.text_part) if mail.text_part
-      messages << new(location, mail) if messages.empty?
+      messages << new(mail, options.merge(part: mail.html_part)) if mail.html_part
+      messages << new(mail, options.merge(part: mail.text_part)) if mail.text_part
+      messages << new(mail, options) if messages.empty?
       messages.each(&:render)
       messages.sort
     end
 
-    def initialize(location, mail, part = nil)
-      @location = location
+    ERROR_MSG = '%s or default configuration must be given'.freeze
+
+    def initialize(mail, options = {})
       @mail = mail
-      @part = part
+      @location = options[:location] || LetterOpener.configuration.location
+      @part = options[:part]
+      @template = options[:message_template] || LetterOpener.configuration.message_template
       @attachments = []
+
+      raise ArgumentError, ERROR_MSG % 'options[:location]' unless @location
+      raise ArgumentError, ERROR_MSG % 'options[:message_template]' unless @template
     end
 
     def render
@@ -33,11 +39,11 @@ module LetterOpener
           filename = attachment_filename(attachment)
           path = File.join(attachments_dir, filename)
 
-          unless File.exists?(path) # true if other parts have already been rendered
+          unless File.exist?(path) # true if other parts have already been rendered
             File.open(path, 'wb') { |f| f.write(attachment.body.raw_source) }
           end
 
-          @attachments << [attachment.filename, "attachments/#{URI.escape(filename)}"]
+          @attachments << [attachment.filename, "attachments/#{CGI.escape(filename)}"]
         end
       end
 
@@ -47,7 +53,7 @@ module LetterOpener
     end
 
     def template
-      File.read(File.expand_path("../message.html.erb", __FILE__))
+      File.read(File.expand_path("../templates/#{@template}.html.erb", __FILE__))
     end
 
     def filepath
@@ -103,7 +109,7 @@ module LetterOpener
     end
 
     def auto_link(text)
-      text.gsub(URI.regexp(%W[https http])) do |link|
+      text.gsub(URI::Parser.new.make_regexp(%W[https http])) do |link|
         "<a href=\"#{ link }\">#{ link }</a>"
       end
     end
@@ -113,7 +119,7 @@ module LetterOpener
     end
 
     def attachment_filename(attachment)
-      attachment.filename.gsub(/[^\w\-_.]/, '_')
+      attachment.filename.gsub(/[^\w\-.]/, '_')
     end
 
     def <=>(other)

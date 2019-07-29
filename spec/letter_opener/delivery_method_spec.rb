@@ -223,7 +223,7 @@ describe LetterOpener::DeliveryMethod do
 
     it 'creates attachments dir with attachment' do
       attachment = Dir["#{location}/*/attachments/#{File.basename(__FILE__)}"].first
-      expect(File.exists?(attachment)).to be_truthy
+      expect(File.exist?(attachment)).to be_truthy
     end
 
     it 'saves attachment name' do
@@ -251,7 +251,7 @@ describe LetterOpener::DeliveryMethod do
 
     it 'creates attachments dir with attachment' do
       attachment = Dir["#{location}/*/attachments/#{File.basename(__FILE__)}"].first
-      expect(File.exists?(attachment)).to be_truthy
+      expect(File.exist?(attachment)).to be_truthy
     end
 
     it 'replaces inline attachment urls' do
@@ -283,7 +283,7 @@ describe LetterOpener::DeliveryMethod do
 
     it 'creates attachments dir with attachment' do
       attachment = Dir["#{location}/*/attachments/non_word_chars_used_01-02.txt"].first
-      expect(File.exists?(attachment)).to be_truthy
+      expect(File.exist?(attachment)).to be_truthy
     end
 
     it 'saves attachment name' do
@@ -316,7 +316,7 @@ describe LetterOpener::DeliveryMethod do
   end
 
   context 'delivery params' do
-    it 'raises an exception if delivery params are not valid' do
+    it 'raises an exception if there is no SMTP Envelope To value' do
       expect(Launchy).not_to receive(:open)
 
       expect {
@@ -326,6 +326,51 @@ describe LetterOpener::DeliveryMethod do
           body     'World! http://example.com'
         end
       }.to raise_exception(ArgumentError)
+    end
+
+    it 'does not raise an exception if there is at least one SMTP Envelope To value' do
+      expect(Launchy).to receive(:open)
+
+      expect {
+        Mail.deliver do
+          from     'Foo foo@example.com'
+          cc       'Bar bar@example.com'
+          reply_to 'No Reply no-reply@example.com'
+          body     'World! http://example.com'
+        end
+      }.not_to raise_exception
+    end
+  end
+
+  context 'light template' do
+    before do
+      expect(Launchy).to receive(:open)
+
+      LetterOpener.configure do |config|
+        config.message_template = :light
+      end
+
+      Mail.defaults do
+        delivery_method LetterOpener::DeliveryMethod, :location => File.expand_path('../../../tmp/letter_opener', __FILE__)
+      end
+
+      Mail.deliver do
+        subject  'Foo subject'
+        from     'Foo foo@example.com'
+        reply_to 'No Reply no-reply@example.com'
+        to       'Bar bar@example.com'
+        body     'World! http://example.com'
+      end
+    end
+
+    after do
+      LetterOpener.configure do |config|
+        config.message_template = :default
+      end
+    end
+
+    it 'creates plain html document' do
+      expect(File.exist?(plain_file)).to be_truthy
     end
   end
 end
